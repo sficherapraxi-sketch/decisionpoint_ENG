@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DECISION POINT — The Energiton Case</title>
+  <style>
+    :root{
+      --praxi-blue:#002855;
+      --wasabi:#cce97f;
+      --cool-grey:#eef1f8;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--praxi-blue);
+      background:var(--cool-grey);
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:var(--white);
+      border-bottom:2px solid var(--cool-grey);
+    }
+    .header-inner{
+      max-width:980px;
+      margin:0 auto;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      min-width:0;
+    }
+    .brand .logo{
+      font-weight:800;
+      letter-spacing:1px;
+      color:var(--praxi-blue);
+    }
+    .brand .title{
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .progress{
+      min-width:210px;
+      text-align:right;
+      font-size:14px;
+      line-height:1.2;
+    }
+    .progress .bar{
+      width:210px;
+      height:8px;
+      background:var(--cool-grey);
+      border-radius:999px;
+      overflow:hidden;
+      margin-left:auto;
+      border:1px solid var(--cool-grey);
+    }
+    .progress .bar > div{
+      height:100%;
+      width:0%;
+      background:var(--wasabi);
+    }
+
+    main{
+      max-width:980px;
+      margin:0 auto;
+      padding:20px 16px 32px;
+      min-height:calc(100vh - 70px);
+      display:flex;
+      align-items:stretch;
+    }
+    .card{
+      width:100%;
+      background:var(--white);
+      border:2px solid var(--cool-grey);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:none;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    h1,h2,h3{margin:0;}
+    h1{font-size:22px;}
+    h2{font-size:18px;}
+    p{margin:0; font-size:16px; line-height:1.45;}
+
+    .btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;}
+    button{
+      appearance:none;
+      border:2px solid var(--praxi-blue);
+      background:var(--praxi-blue);
+      color:var(--white);
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .04s ease;
+    }
+    button:active{transform:scale(0.99)}
+    button.secondary{
+      background:var(--white);
+      color:var(--praxi-blue);
+      border-color:var(--praxi-blue);
+    }
+    button.option{
+      width:100%;
+      text-align:left;
+      background:var(--white);
+      color:var(--praxi-blue);
+      border-color:var(--cool-grey);
+    }
+    button.option:hover{border-color:var(--praxi-blue)}
+    button.option.selected{
+      border-color:var(--praxi-blue);
+      background:var(--cool-grey);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed;}
+
+    .options{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+    .meta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:14px;
+      color:var(--praxi-blue);
+      opacity:.9;
+    }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--cool-grey);
+      border:1px solid var(--cool-grey);
+    }
+    .box{
+      border:2px solid var(--cool-grey);
+      border-radius:14px;
+      padding:12px;
+      background:var(--white);
+    }
+    .small{font-size:14px; opacity:.95;}
+
+    @media (max-width:640px){
+      header{position:static;}
+      .header-inner{flex-direction:column; align-items:flex-start;}
+      .progress{min-width:0; width:100%; text-align:left;}
+      .progress .bar{width:100%; margin-left:0;}
+      main{padding:14px 12px 24px; min-height:auto;}
+      .card{padding:14px; border-radius:14px;}
+      h1{font-size:20px;}
+      p{font-size:15px;}
+      .btn-row{flex-direction:column;}
+      button{width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">PRAXI</div>
+        <div class="title">DECISION POINT — The Energiton Case</div>
+      </div>
+      <div class="progress" aria-live="polite">
+        <div id="progressText">Ready</div>
+        <div class="bar" aria-hidden="true"><div id="progressBar"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card" id="app"></div>
+  </main>
+
+  <script>
+    // -----------------------------
+    // Data (from the uploaded template)
+    // -----------------------------
+    const quiz = {
+      title: "DECISION POINT",
+      subtitle: "The Energiton Case",
+      variables: ["Effectiveness", "Efficiency"],
+      howToPlay: [
+        "1975. The oil crisis. Energy prices are skyrocketing, political pressure is mounting, and newspapers headline the growing risk of recession every single day.",
+        "You are in the control room at Energiton, France's largest oil company. You are a senior executive at Energiton and you are tasked with evaluating new technologies and deciding quickly which direction to take.",
+        "Every choice you make will affect two key factors:",
+        "Effectiveness: your ability to achieve the intended outcome.",
+        "Efficiency: the speed of decision-making, without falling into analysis paralysis or wasting resources.",
+        "Complete the story by finding the right balance between these two dimensions. For each scenario, you will be able to choose between three options, each representing a different approach to the situation."
+      ],
+      scenarios: [
+        {
+          title: "The Miracle Invention",
+          description: "You have a meeting with two inventors. They have no prior experience in the energy sector, but claim to have developed a one-of-a-kind method: an aircraft capable of detecting oil reserves from the air. They arrive with detailed maps and speak with great enthusiasm, pressing hard on the urgent need for solutions to the crisis.",
+          options: [
+            { text: "I trust them and launch a pilot test: I gain time.", scores: { Effectiveness: -30, Efficiency: 20 } },
+            { text: "I request technical evidence and independent validation, even if it slows things down.", scores: { Effectiveness: 30, Efficiency: -20 } },
+            { text: "I consider the proposal as a hypothesis only and wait for further evidence before committing.", scores: { Effectiveness: 10, Efficiency: 10 } }
+          ]
+        },
+        {
+          title: "The Private Demonstration",
+          description: "The inventors arrange a demonstration at a hangar in Toulouse. The aircraft used is modest, but they insist the real value lies in the instruments on board. During the flight, the monitor displays maps consistent with known oil fields. The inventors comment: \"This proves the system works.\" An Energiton technician quietly notes that the data could have alternative explanations, but raises no further objections.",
+          options: [
+            { text: "I find the demonstration compelling: the data matches reality, and that is enough to move forward.", scores: { Effectiveness: -30, Efficiency: 25 } },
+            { text: "I show interest, but request additional comparative tests in less familiar areas.", scores: { Effectiveness: 30, Efficiency: -20 } },
+            { text: "I congratulate the inventors and suggest launching a limited trial phase to avoid losing time.", scores: { Effectiveness: 10, Efficiency: 5 } }
+          ]
+        },
+        {
+          title: "Political Pressure",
+          description: "After Toulouse, a call comes in from Paris: \"The country needs a confidence boost. Show people we are taking action.\" Some colleagues tell you: \"If we wait too long, we'll miss the chance to make the first move.\" The Ministry suggests publicly announcing that Energiton is testing the new technology. How do you respond?",
+          options: [
+            { text: "I go along with it: a quick announcement would strengthen our image as innovators.", scores: { Effectiveness: -30, Efficiency: 25 } },
+            { text: "I recommend a vague press statement referencing \"ongoing evaluations.\"", scores: { Effectiveness: 5, Efficiency: 10 } },
+            { text: "I ask to postpone: without fully verified data, we risk serious reputational damage.", scores: { Effectiveness: 30, Efficiency: -20 } }
+          ]
+        },
+        {
+          title: "The Budget Question",
+          description: "The CFO walks you through the numbers: drilling and prospecting costs have already exceeded projections. \"If this technology works, we cut costs dramatically. But if we wait, a competitor will beat us to it.\" The inventors are now requesting an initial investment of 50 million francs. What's your call?",
+          options: [
+            { text: "I approve the investment: the risk is high, but we all believe it will work.", scores: { Effectiveness: -30, Efficiency: 25 } },
+            { text: "I propose a staged approach: an initial investment of 10 million francs, with further funding contingent on results.", scores: { Effectiveness: 5, Efficiency: 10 } },
+            { text: "I delay the decision: this is not the right time to authorize funding.", scores: { Effectiveness: 30, Efficiency: -20 } }
+          ]
+        },
+        {
+          title: "The Boardroom",
+          description: "In the meeting room, all executives are enthusiastic. France will lead the world with this groundbreaking invention. But something still doesn't sit right with you. What do you do?",
+          options: [
+            { text: "I go along with the group. This isn't the moment to rock the boat.", scores: { Effectiveness: -25, Efficiency: 15 } },
+            { text: "I openly express my doubts, even if it means challenging everyone.", scores: { Effectiveness: 30, Efficiency: -20 } },
+            { text: "I try to understand whether anyone else shares my doubts and is willing to speak up.", scores: { Effectiveness: 10, Efficiency: 10 } }
+          ]
+        }
+      ],
+      profiles: [
+        {
+          name: "The Reflective Thinker",
+          test: (v) => (v.Effectiveness - v.Efficiency) >= 30,
+          description: "You prioritize accuracy over speed. You weigh alternatives carefully, consider the impact of your decisions, and catch connections that others miss. You tend to delay action until you have enough information to feel confident in your choice.\n\nThat makes you reliable and rational, but it can become a limitation in contexts that require speed and adaptability. Waiting for the \"perfect decision\" may lead to missed opportunities. Accepting a degree of uncertainty can help you act more promptly and stay aligned with the context."
+        },
+        {
+          name: "The Fast Executor",
+          test: (v) => (v.Efficiency - v.Effectiveness) >= 30,
+          description: "Your decision-making style is action-oriented. When a problem surfaces, you move quickly: you prefer to test and adjust along the way rather than getting stuck in analysis. Your strength is responsiveness: you can make quick decisions and keep things moving, even under time pressure or uncertainty. However, this drive for efficiency may lead to less effective decisions in the long term. Before acting, take a moment to ensure you have enough information."
+        },
+        {
+          name: "The Balanced Decision-Maker",
+          test: (v) => Math.abs(v.Effectiveness - v.Efficiency) < 30,
+          description: "You are able to maintain a strong balance between effectiveness and efficiency. You know when to slow down and reflect, and when to push forward, and you adapt your decision-making style to the context.\n\nKeep cultivating this flexibility, but train yourself to recognize the signals that tell you when to lean more toward analysis or speed."
+        }
+      ]
+    };
+
+    // -----------------------------
+    // State
+    // -----------------------------
+    const state = {
+      step: -1, // -1 start, 0..N-1 scenarios, N results
+      totals: { Effectiveness: 0, Efficiency: 0 },
+      // answers[i] = original option index chosen for scenario i
+      answers: [],
+      // optionOrders[i] = array of original indexes in the randomized display order (stable within the session)
+      optionOrders: []
+    };
+
+    const app = document.getElementById('app');
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+
+    function scrollTop(){ window.scrollTo({top:0, left:0, behavior:'auto'}); }
+
+    // Fisher–Yates shuffle
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function setProgress(step){
+      const n = quiz.scenarios.length;
+      if(step < 0){
+        progressText.textContent = 'Ready';
+        progressBar.style.width = '0%';
+        return;
+      }
+      if(step >= 0 && step < n){
+        progressText.textContent = `Scenario ${step+1} of ${n}`;
+        progressBar.style.width = `${Math.round(((step+1)/n)*100)}%`;
+        return;
+      }
+      progressText.textContent = 'Results';
+      progressBar.style.width = '100%';
+    }
+
+    function recomputeTotals(){
+      state.totals = { Effectiveness: 0, Efficiency: 0 };
+      for(let i=0; i<quiz.scenarios.length; i++){
+        const chosen = state.answers[i];
+        if(chosen === undefined || chosen === null) continue;
+        const o = quiz.scenarios[i].options[chosen];
+        state.totals.Effectiveness += o.scores.Effectiveness;
+        state.totals.Efficiency += o.scores.Efficiency;
+      }
+    }
+
+    function reset(){
+      state.step = -1;
+      state.totals = { Effectiveness: 0, Efficiency: 0 };
+      state.answers = [];
+      state.optionOrders = [];
+      render();
+    }
+
+    function start(){
+      state.step = 0;
+      render();
+    }
+
+    function render(){
+      setProgress(state.step);
+      if(state.step < 0) return renderStart();
+      if(state.step < quiz.scenarios.length) return renderScenario(state.step);
+      return renderResults();
+    }
+
+    function renderStart(){
+      app.innerHTML = '';
+      const h1 = document.createElement('h1');
+      h1.textContent = `${quiz.title}`;
+      const h2 = document.createElement('h2');
+      h2.textContent = `${quiz.subtitle}`;
+
+      const introBox = document.createElement('div');
+      introBox.className = 'box';
+      const intro = quiz.howToPlay;
+      introBox.innerHTML = `
+        <div class="meta">
+          <span class="pill">2 dimensions</span>
+          <span class="pill">5 scenarios</span>
+          <span class="pill">Single choice per scenario</span>
+        </div>
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+          <p>${intro[0]}</p>
+          <p>${intro[1]}</p>
+          <p>${intro[2]}</p>
+          <p><b>${intro[3].split(':')[0]}:</b>${intro[3].split(':')[1]}</p>
+          <p><b>${intro[4].split(':')[0]}:</b>${intro[4].split(':')[1]}</p>
+          <p>${intro[5]}</p>
+          <p class="small">Tip: Choose the option that feels most natural for you. At the end you will receive a profile and your scores.</p>
+        </div>
+      `;
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btn-row';
+      const startBtn = document.createElement('button');
+      startBtn.textContent = 'Start';
+      startBtn.onclick = () => { start(); scrollTop(); };
+
+      btnRow.appendChild(startBtn);
+
+      app.appendChild(h1);
+      app.appendChild(h2);
+      app.appendChild(introBox);
+      app.appendChild(btnRow);
+    }
+
+    function ensureOrder(i){
+      if(state.optionOrders[i]) return state.optionOrders[i];
+      const count = quiz.scenarios[i].options.length;
+      const base = Array.from({length:count}, (_,k)=>k);
+      state.optionOrders[i] = shuffle(base);
+      return state.optionOrders[i];
+    }
+
+    function renderScenario(i){
+      const n = quiz.scenarios.length;
+      const s = quiz.scenarios[i];
+      app.innerHTML = '';
+
+      const h2 = document.createElement('h2');
+      h2.textContent = `Scenario ${i+1}: ${s.title}`;
+      const p = document.createElement('p');
+      p.textContent = s.description;
+
+      const optionsWrap = document.createElement('div');
+      optionsWrap.className = 'options';
+
+      const order = ensureOrder(i);
+
+      // Buttons
+      const optionButtons = [];
+      order.forEach((originalIndex) => {
+        const opt = s.options[originalIndex];
+        const b = document.createElement('button');
+        b.className = 'option';
+        b.type = 'button';
+        b.textContent = opt.text;
+        b.dataset.originalIndex = String(originalIndex);
+        b.onclick = () => {
+          // visual selection
+          optionButtons.forEach(x => x.classList.remove('selected'));
+          b.classList.add('selected');
+
+          // store answer
+          state.answers[i] = originalIndex;
+          recomputeTotals();
+
+          // enable Next
+          nextBtn.disabled = false;
+        };
+        optionsWrap.appendChild(b);
+        optionButtons.push(b);
+      });
+
+      // Pre-select if already answered
+      if(state.answers[i] !== undefined && state.answers[i] !== null){
+        const chosen = String(state.answers[i]);
+        const btn = optionButtons.find(x => x.dataset.originalIndex === chosen);
+        if(btn) btn.classList.add('selected');
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.innerHTML = `<span class="pill">Progress: ${i+1}/${n}</span>`;
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btn-row';
+
+      const backBtn = document.createElement('button');
+      backBtn.className = 'secondary';
+      backBtn.textContent = 'Back';
+      backBtn.disabled = (i === 0);
+      backBtn.onclick = () => {
+        if(i === 0) return;
+        state.step -= 1;
+        render();
+        scrollTop();
+      };
+
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = (i === n-1) ? 'See results' : 'Next';
+      nextBtn.disabled = !(state.answers[i] !== undefined && state.answers[i] !== null);
+      nextBtn.onclick = () => {
+        // require answer
+        if(state.answers[i] === undefined || state.answers[i] === null) return;
+        state.step += 1;
+        render();
+        scrollTop();
+      };
+
+      const restartBtn = document.createElement('button');
+      restartBtn.className = 'secondary';
+      restartBtn.textContent = 'Restart';
+      restartBtn.onclick = () => { reset(); scrollTop(); };
+
+      btnRow.appendChild(backBtn);
+      btnRow.appendChild(nextBtn);
+      btnRow.appendChild(restartBtn);
+
+      app.appendChild(h2);
+      app.appendChild(meta);
+      app.appendChild(p);
+      app.appendChild(optionsWrap);
+      app.appendChild(btnRow);
+
+      scrollTop();
+    }
+
+    function pickProfile(){
+      const v = state.totals;
+      for(const p of quiz.profiles){
+        if(p.test(v)) return p;
+      }
+      return quiz.profiles[quiz.profiles.length-1];
+    }
+
+    function renderResults(){
+      recomputeTotals();
+      const prof = pickProfile();
+      app.innerHTML = '';
+
+      const h1 = document.createElement('h1');
+      h1.textContent = 'Your result';
+
+      const box = document.createElement('div');
+      box.className = 'box';
+      const eff = state.totals.Effectiveness;
+      const efi = state.totals.Efficiency;
+      box.innerHTML = `
+        <h2 style="margin-bottom:8px;">Profile: ${prof.name}</h2>
+        <p style="white-space:pre-line;">${prof.description}</p>
+        <div style="height:12px"></div>
+        <div class="meta">
+          <span class="pill">Effectiveness: <b>${eff}</b></span>
+          <span class="pill">Efficiency: <b>${efi}</b></span>
+        </div>
+        <p class="small" style="margin-top:10px;">Use this outcome as a starting point for a debrief with your Trainer.</p>
+      `;
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btn-row';
+
+      const backBtn = document.createElement('button');
+      backBtn.className = 'secondary';
+      backBtn.textContent = 'Back';
+      backBtn.onclick = () => {
+        state.step = quiz.scenarios.length - 1;
+        render();
+        scrollTop();
+      };
+
+      const restartBtn = document.createElement('button');
+      restartBtn.className = 'secondary';
+      restartBtn.textContent = 'Restart';
+      restartBtn.onclick = () => { reset(); scrollTop(); };
+
+      btnRow.appendChild(backBtn);
+      btnRow.appendChild(restartBtn);
+
+      app.appendChild(h1);
+      app.appendChild(box);
+      app.appendChild(btnRow);
+
+      scrollTop();
+    }
+
+    // init
+    render();
+  </script>
+</body>
+</html>
